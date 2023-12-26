@@ -1,2 +1,2 @@
 # Serpake
-un petit snake game sur macOS
+un petit snake game en python via pygame
