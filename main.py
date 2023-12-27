@@ -11,7 +11,7 @@ class Apple:
         # Paramètres :
         #   parent_screen : La surface sur laquelle la pomme sera dessinée.
         self.parent_screen = parent_screen
-        self.image = pygame.image.load("resources/apple.jpg").convert()
+        self.image = pygame.image.load("resources/apple.png").convert()
         self.x = 120
         self.y = 120
 
