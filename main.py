@@ -76,10 +76,9 @@ class Snake:
 
     def draw(self):
         # Dessine le serpent sur la surface avec sa position actuelle
-        self.parent_screen.fill(BACKGROUND_COLOR)
-
         for i in range(self.length):
             self.parent_screen.blit(self.image, (self.x[i], self.y[i]))
+
         pygame.display.flip()
 
     def increase_length(self):
@@ -92,12 +91,31 @@ class Game:
     def __init__(self):
         # Constructeur de la classe Game
         pygame.init()
-        pygame.display.set_caption("Codebasics Snake And Apple Game")
+        pygame.display.set_caption("MerriSnake")
+
+        # Initialisation de la musique de fond
+        pygame.mixer.init()
+        self.play_background_music()
+
         self.surface = pygame.display.set_mode((1000, 800))
         self.snake = Snake(self.surface)
         self.snake.draw()
         self.apple = Apple(self.surface)
         self.apple.draw()
+
+    def play_background_music(self):
+        # Charge et joue la musique de fond en boucle
+        pygame.mixer.music.load('resources/bg_music_1.mp3')
+        pygame.mixer.music.play(-1, 0)
+
+    def play_sound(self, sound_name):
+        # Joue des effets sonores en fonction du nom du son
+        if sound_name == "crash":
+            sound = pygame.mixer.Sound("resources/crash.mp3")
+        elif sound_name == 'ding':
+            sound = pygame.mixer.Sound("resources/ding.mp3")
+
+        pygame.mixer.Sound.play(sound)
 
     def reset(self):
         # Réinitialise le jeu en créant un nouveau serpent et une nouvelle pomme
@@ -111,8 +129,14 @@ class Game:
                 return True
         return False
 
+    def render_background(self):
+        # Charge et affiche l'image de fond
+        bg = pygame.image.load("resources/background.jpg")
+        self.surface.blit(bg, (0, 0))
+
     def play(self):
         # Fonction principale du jeu
+        self.render_background()
         self.snake.walk()
         self.apple.draw()
         self.display_score()
@@ -120,12 +144,14 @@ class Game:
 
         # Scenario où le serpent mange la pomme
         if self.is_collision(self.snake.x[0], self.snake.y[0], self.apple.x, self.apple.y):
+            self.play_sound("ding")
             self.snake.increase_length()
             self.apple.move()
 
         # Scenario où le serpent entre en collision avec lui-même
-        for i in range(2, self.snake.length):
+        for i in range(3, self.snake.length):
             if self.is_collision(self.snake.x[0], self.snake.y[0], self.snake.x[i], self.snake.y[i]):
+                self.play_sound('crash')
                 raise Exception("Collision Occurred")
 
     def display_score(self):
@@ -138,10 +164,18 @@ class Game:
         # Affiche l'écran de fin de jeu
         self.surface.fill(BACKGROUND_COLOR)
         font = pygame.font.SysFont('arial', 30)
-        line1 = font.render(f"Game is over! Your score is {self.snake.length}", True, (255, 255, 255))
+
+        # Première ligne avec le score
+        line1 = font.render(f"Game over! Ton Score est {self.snake.length}", True, (255, 255, 255))
         self.surface.blit(line1, (200, 300))
-        line2 = font.render("To play again press Enter. To exit press Escape!", True, (255, 255, 255))
+
+        # Deuxième ligne avec les instructions de redémarrage
+        line2 = font.render("Restart le jeu appuyez sur la touche 'Enter'.", True, (255, 255, 255))
         self.surface.blit(line2, (200, 350))
+
+        # Troisième ligne avec les instructions de sortie
+        line3 = font.render("Pour quitter appuyez sur la touche 'Escape'!", True, (255, 255, 255))
+        self.surface.blit(line3, (200, 400))
 
         pygame.display.flip()
 
@@ -157,6 +191,7 @@ class Game:
                         running = False
 
                     if event.key == K_RETURN:
+                        pygame.mixer.music.unpause()
                         pause = False
 
                     if not pause:
