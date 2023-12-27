@@ -1,17 +1,43 @@
 import pygame
 from pygame.locals import *
 import time
+import random
+
+SIZE = 40
+
+class Apple:
+    def __init__(self, parent_screen):
+        # Constructeur de la classe Apple
+        # Paramètres :
+        #   parent_screen : La surface sur laquelle la pomme sera dessinée.
+        self.parent_screen = parent_screen
+        self.image = pygame.image.load("resources/apple.png").convert()
+        self.x = 120
+        self.y = 120
+
+    def draw(self):
+        # Dessine la pomme sur la surface avec sa position actuelle
+        self.parent_screen.blit(self.image, (self.x, self.y))
+        pygame.display.flip()
+
+    def move(self):
+        # Déplace la pomme à une position aléatoire sur la surface
+        self.x = random.randint(1, 25) * SIZE
+        self.y = random.randint(1, 20) * SIZE
 
 class Snake:
-    def __init__(self, surface):
+    def __init__(self, parent_screen, length):
         # Constructeur de la classe Snake
         # Paramètres :
-        #   surface : La surface sur laquelle le serpent sera dessiné.
-        self.parent_screen = surface
-        self.block = pygame.image.load("ressources/block.jpg").convert()
-        self.x = 100
-        self.y = 100
+        #   parent_screen : La surface sur laquelle le serpent sera dessiné.
+        #   length : Longueur initiale du serpent.
+        self.parent_screen = parent_screen
+        self.image = pygame.image.load("resources/block.jpg").convert()
         self.direction = 'down'
+
+        self.length = length
+        self.x = [40] * length
+        self.y = [40] * length
 
     def move_left(self):
         # Change la direction du serpent vers la gauche
@@ -30,32 +56,52 @@ class Snake:
         self.direction = 'down'
 
     def walk(self):
-        # Fonction pour faire avancer le serpent dans la direction actuelle
+        # Met à jour la position du serpent
+        # Met à jour le corps du serpent
+        for i in range(self.length - 1, 0, -1):
+            self.x[i] = self.x[i - 1]
+            self.y[i] = self.y[i - 1]
+
+        # Met à jour la tête du serpent en fonction de la direction
         if self.direction == 'left':
-            self.x -= 10
+            self.x[0] -= SIZE
         if self.direction == 'right':
-            self.x += 10
+            self.x[0] += SIZE
         if self.direction == 'up':
-            self.y -= 10
+            self.y[0] -= SIZE
         if self.direction == 'down':
-            self.y += 10
+            self.y[0] += SIZE
 
         self.draw()
 
     def draw(self):
         # Dessine le serpent sur la surface avec sa position actuelle
         self.parent_screen.fill((110, 110, 5))
-        self.parent_screen.blit(self.block, (self.x, self.y))
+
+        for i in range(self.length):
+            self.parent_screen.blit(self.image, (self.x[i], self.y[i]))
         pygame.display.flip()
 
+    def increase_length(self):
+        # Augmente la longueur du serpent
+        self.length += 1
+        self.x.append(-1)
+        self.y.append(-1)
 
 class Game:
     def __init__(self):
         # Constructeur de la classe Game
         pygame.init()
-        self.surface = pygame.display.set_mode((1000, 500))
-        self.snake = Snake(self.surface)
+        self.surface = pygame.display.set_mode((1000, 800))
+        self.snake = Snake(self.surface, 5)
         self.snake.draw()
+        self.apple = Apple(self.surface)
+        self.apple.draw()
+
+    def play(self):
+        # Fonction principale du jeu
+        self.snake.walk()
+        self.apple.draw()
 
     def run(self):
         # Boucle principale du jeu
@@ -82,10 +128,11 @@ class Game:
                 elif event.type == QUIT:
                     running = False
 
-            self.snake.walk()
+            self.play()
 
-            time.sleep(.2)  # Ajout d'une pause pour ralentir le déplacement du serpent
+            time.sleep(.2)
 
 if __name__ == '__main__':
     game = Game()
     game.run()
+
