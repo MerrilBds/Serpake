@@ -11,7 +11,7 @@ class Apple:
         # Paramètres :
         #   parent_screen : La surface sur laquelle la pomme sera dessinée.
         self.parent_screen = parent_screen
-        self.image = pygame.image.load("resources/apple.png").convert()
+        self.image = pygame.image.load("resources/apple.jpg").convert()
         self.x = 120
         self.y = 120
 
@@ -58,9 +58,9 @@ class Snake:
     def walk(self):
         # Met à jour la position du serpent
         # Met à jour le corps du serpent
-        for i in range(self.length - 1, 0, -1):
-            self.x[i] = self.x[i - 1]
-            self.y[i] = self.y[i - 1]
+        for i in range(self.length-1, 0, -1):
+            self.x[i] = self.x[i-1]
+            self.y[i] = self.y[i-1]
 
         # Met à jour la tête du serpent en fonction de la direction
         if self.direction == 'left':
@@ -93,15 +93,35 @@ class Game:
         # Constructeur de la classe Game
         pygame.init()
         self.surface = pygame.display.set_mode((1000, 800))
-        self.snake = Snake(self.surface, 5)
+        self.snake = Snake(self.surface, 2)
         self.snake.draw()
         self.apple = Apple(self.surface)
         self.apple.draw()
+
+    def is_collision(self, x1, y1, x2, y2):
+        # Vérifie si deux objets rectangulaires se chevauchent
+        if x1 >= x2 and x1 < x2 + SIZE:
+            if y1 >= y2 and y1 < y2 + SIZE:
+                return True
+        return False
+
+    def display_score(self):
+        # Affiche le score à l'écran
+        font = pygame.font.SysFont('arial', 30)
+        score = font.render(f"Score: {self.snake.length}", True, (200, 200, 200))
+        self.surface.blit(score, (850, 10))
 
     def play(self):
         # Fonction principale du jeu
         self.snake.walk()
         self.apple.draw()
+        self.display_score()
+        pygame.display.flip()
+
+        # Si le serpent touche la pomme, augmente la longueur du serpent et déplace la pomme
+        if self.is_collision(self.snake.x[0], self.snake.y[0], self.apple.x, self.apple.y):
+            self.snake.increase_length()
+            self.apple.move()
 
     def run(self):
         # Boucle principale du jeu
@@ -135,4 +155,3 @@ class Game:
 if __name__ == '__main__':
     game = Game()
     game.run()
-
